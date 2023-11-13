@@ -1,6 +1,6 @@
 ---
 title: "MA20277 - Coursework 1"
-author: "PLEASE ENTER YOUR CANDIDATE NUMBER"
+author: "Harry Rogers"
 output: pdf_document
 
 ---
@@ -25,23 +25,22 @@ The Utopian charity *Respect for Pets* has collected data on cats and dogs for 1
 a) How has the number of dogs and cats changed over time? How has the popularity of the different dog breeds evolved since 1990?
 
 ```{r, Read in data, warning=FALSE}
-pets = read.csv("Data/Pets.csv")
-maltese_Dogs = read.csv("Data/Maltese.csv")
-respiratory_Cases = read.csv("Data/Cases.csv")
+pets = read.csv("data/Pets.csv")
+maltese_Dogs = read.csv("data/Maltese.csv")
+respiratory_Cases = read.csv("data/Cases.csv")
 ```
 
 ### 1A - Cats and Dogs Population Analysis
-```{r, Cats and Dogs Population Analysis}
-Cats_Dogs_Aggregated_Data = pets %>% mutate(Total_Cats = (Cats + CatRescue),
-                                  Total_Dogs = (Beagles + Dachshund + Maltese +                                             BeaglesRescue + DachshundRescue + MalteseRescue), 
-                                  Date_col = make_date(Year,Month,1)) %>% 
+```{r, Cats and Dogs Population Analysis,out.width="80%"}
+Cats_Dogs_Aggregated_Data = pets %>% mutate(Total_Dogs = (Beagles + Dachshund + Maltese), 
+                                            Date_col = make_date(Year,Month,1)) %>% 
 # Add columns calculating total for Cats and Dogs, 
 # and combining year and month columns using lubridate 
-select(Date_col,Total_Cats,Total_Dogs) 
+select(Date_col,Cats,Total_Dogs) 
 # Selecting only needed columns for analysis
 
 ggplot(Cats_Dogs_Aggregated_Data,aes(Date_col)) + 
-  geom_line(aes(y = Total_Cats, color = "Total Cat Population")) +
+  geom_line(aes(y = Cats, color = "Total Cat Population")) +
   geom_line(aes(y = Total_Dogs, color = "Total Dog Population")) +
   theme(legend.title = element_text(face = "bold")) +
   labs(colour = "Line by Category", title = "Cats vs Dogs over sample period") +
@@ -56,20 +55,16 @@ We are able to see that while cats used to have a higher population than dogs wi
 
 
 ### 1A - Breed population analysis
-```{r, Dog Breed Population Analysis}
-Breed_Analysis = pets %>% mutate(Total_Beagles = Beagles + BeaglesRescue,
-                                 Total_Dachshund = Dachshund + DachshundRescue,
-                                 Total_Maltese = Maltese + MalteseRescue,
-                                 Date_col = make_date(Year,Month,1)) %>% 
-  select(Date_col,Total_Beagles,Total_Dachshund,Total_Maltese)
+```{r, Dog Breed Population Analysis,out.width="80%"}
+Breed_Analysis = pets %>% mutate(Date_col = make_date(Year,Month,1)) %>% 
+  select(Date_col,Beagles,Dachshund,Maltese)
 
 ggplot(Breed_Analysis,aes(Date_col)) + 
-  geom_line(aes(y = Total_Beagles, color = "Total Beagle Population")) +
-  geom_line(aes(y = Total_Dachshund, color = "Total Dachshund Population")) +
-  geom_line(aes(y = Total_Maltese, color = "Total Maltese Population")) +
-  theme(legend.title = element_text(face = "bold")) +
+  geom_line(aes(y = Beagles, color = "Total Beagle Population")) +
+  geom_line(aes(y = Dachshund, color = "Total Dachshund Population")) +
+  geom_line(aes(y = Maltese, color = "Total Maltese Population")) +
+  ggtitle("Breed Population over time") +
   labs(colour = "Line by Breed",
-       title = "Breed Population over time",
        x = "Sample Period (Monthly)",
        y = "Total Population") +
   coord_cartesian(xlim = c(make_date(1990,1,1),make_date(2023,9,1)),
@@ -78,16 +73,15 @@ ggplot(Breed_Analysis,aes(Date_col)) +
 
 ```
 
-We are able to see that Maltese and Beagle breeds have stayed consistently similar throughout the sample period, with a mean of 82,000 and 87,000 respectively. The Dachshund breed has been higher throughout the sample period and continues to grow, reaching a maximum of 141,000 and a mean of 123,000.
+We are able to see that Maltese and Beagle breeds have stayed consistently similar throughout the sample period, with a mean of 82,000 and 87,000 respectively. The Dachshund breed has been higher throughout the sample period and continues to grow, reaching a maximum of 141,000 and a mean of 123,000. If more analysis was required, we could also consider looking at the proportion of rescue dogs and cats compared to their population. This would provide information on their popularity during ownership.
 
 
 b) Maltese are known to experience respiratory issues, such as wheezing or asthma. How do environmental and physiological factors affect the risk of a Maltese experiencing these issues?
 
-
-From the preliminary analysis above, we are able to determine a periodic cycle in temperature throughout each year, and therefore can group each year and analyse cases on a month-by-month basis instead.
+By conducting preliminary analysis of the data, we are able to determine a periodic cycle in cases and temperature over each year. We can therefore analyse cases and temperature by grouping the data by month, and analyse the mean temperature and cases monthly.
 
 ### 1B - Maltese Respiratory Issue Analysis
-```{r, Maltese Respiratory Issue Analysis}
+```{r, Maltese Respiratory Issue Analysis,out.width="80%"}
 respiratory_Cases_Clean = respiratory_Cases %>%
 mutate(Date = ymd(Date))
                                     
@@ -112,70 +106,54 @@ respiratory_Cases_Monthly = respiratory_Cases_Clean %>%
   scale_y_continuous(sec.axis = sec_axis(~ ., name = "Mean Cases")) +
   scale_x_continuous(limits = c(1, 12),breaks = seq(1, 12, by = 1))
 
- 
- 
-#  ggplot(respiratory_Cases_Clean, aes(x = Temperature, y = Number)) +
-#   geom_point() +
-#   geom_smooth(method = "lm", se = FALSE, color = "blue") +
-#   labs(title = "Temperature vs. Cases",
-#        x = "Temperature",
-#        y = "Cases")
-# 
-#  
-# ggplot(respiratory_Cases_Clean, aes(x = Temperature, y = Number)) +
-#   geom_bin2d(bins = 25) +
-#   scale_fill_gradient(low = "antiquewhite", high = "darkred") +
-#   labs(title = "Two Dimensional Histogram showing frequency of cases vs temperature",
-#        y = "Cases") +
-#   theme(plot.title = element_text(hjust = 0.5), 
-#         legend.title = element_text(face = "bold")) + 
-#   theme_minimal()
+ # Correlation between temperature and number of cases throughout the entire sample period
+ cor(respiratory_Cases$Temperature,respiratory_Cases$Number)
 ```
 
 We use monthly mean temperature vs monthly mean cases not to analyse a trend between temperature and respiratory cases, but instead to analyse the seasonality of both occurring.
 
 We may conclude that while cases increase when temperature increases, this may not be the causation, and could be down to something else such as allergies or increased respiration rates at that time of year.
-This is backed up by the correlation coefficient between temperature and cases being around 0.14, suggesting no clear correlation.
+This is reinforced by the correlation coefficient between temperature and cases being around 0.14, suggesting no clear correlation.
 
 ### 1B - Box plots
-```{r, Maltese Respiratory Issue Analysis PT 2}
+```{r,Box plots, figures-side, fig.show="hold", out.width="50%"}
 
 maltese_Dogs = mutate(maltese_Dogs,Respiratory_Issues = case_when(
               RespiratoryIssues == 1 ~ "Respiratory Issues",
               RespiratoryIssues == 0 ~ "No Respiratory Issues"))
 
-Age_Plot = ggplot(maltese_Dogs, 
-                  aes(x=Respiratory_Issues, y=Age, fill = Respiratory_Issues)) + 
-    geom_boxplot() +
-    theme_minimal() + 
-    labs(title = "Age vs Respiratory Issue Comparison for maltese dogs",
-         x = "Respiratory Issues Classification", 
-         y = "Age (Human Years)")
 
-Weight_Plot = ggplot(maltese_Dogs, 
-                     aes(x=Respiratory_Issues, y=Weight, fill = Respiratory_Issues)) + 
-    geom_boxplot() +
-    theme_minimal() + 
-    labs(title = "Weight vs Respiratory Issue Comparison for maltese dogs",
-       x = "Respiratory Issues Classification",
-       y = "Weight (pounds)")
+ggplot(maltese_Dogs, 
+       aes(x = Respiratory_Issues, y = Age, fill = Respiratory_Issues)) + 
+geom_boxplot() +
+theme_minimal() + 
+labs(title = "Age vs Respiratory Issue Comparison for Maltese dogs",
+     x = "Respiratory Issues Classification", 
+     y = "Age",
+     fill = "Respiratory Issues")
 
-Height_Plot = ggplot(maltese_Dogs,
-                     aes(x=Respiratory_Issues, y=Height, fill = Respiratory_Issues)) + 
-    geom_boxplot() +
-    theme_minimal() +
-    labs(title = "Height vs Respiratory Issue Comparison for maltese dogs",
-         x = "Respiratory Issues Classification",
-         y = "Height (inches)")
+ggplot(maltese_Dogs, 
+      aes(x = Respiratory_Issues, y = Weight, fill = Respiratory_Issues)) + 
+geom_boxplot() +
+theme_minimal() + 
+labs(title = "Weight vs Respiratory Issue Comparison for Maltese dogs",
+     x = "Respiratory Issues Classification",
+     y = "Weight (pounds)",
+     fill = "Respiratory Issues")
 
-print(Age_Plot)
-print(Weight_Plot)
-print(Height_Plot)
+ggplot(maltese_Dogs,
+       aes(x = Respiratory_Issues, y = Height, fill = Respiratory_Issues)) + 
+geom_boxplot() +
+theme_minimal() +
+labs(title = "Height vs Respiratory Issue Comparison for Maltese dogs",
+     x = "Respiratory Issues Classification",
+     y = "Height (inches)",
+     fill = "Respiratory Issues")
+
 
 ```
 
-While we can see that analysing height and weight for both classifications shows no significant difference, when we look at age, we are able to draw a conclusion that generally higher aged dogs are more susceptible to respiratory issues, with a higher median, Q1, Q3 and smaller IQR. We are however limited by our data, since we only have 2,500 observations with Respiratory issues, compared to 17,000 without any.
-
+While we can see that analysing height and weight for both classifications shows no significant difference, when we look at age, we are able to draw a conclusion that generally higher aged dogs are more susceptible to respiratory issues, with a higher median, Q3 and smaller IQR. We are however limited by our data, since we only have 2,500 observations with Respiratory issues, compared to 17,000 without any.
 
 ## Question 2
 
@@ -184,8 +162,8 @@ The Utopian Fire Department has gathered data on their activities for 2022. They
 a) How does the frequency of the different causes for fires vary other time? How many casualties were attributed to each cause and are there differences in the frequency with which casualties occur across causes?
 
 ```{r, Read in data Q2, warning=FALSE}
-Fires = read.csv("Data/Fires.csv")
-Housing_Reg = read.csv("Data/Housing Register.csv")
+Fires = read.csv("data/Fires.csv")
+Housing_Reg = read.csv("data/Housing Register.csv")
 ```
 
 ### 2A - Hourly density plots
@@ -214,7 +192,7 @@ From the density function graphs above, we are able to analyse that each categor
 Cooking has the highest frequencies between the ranges 7am-8am, 11am-1pm and 5pm to 8pm; all times associated to breakfast, lunch and dinner. Electrical faults are evenly distributed over 8am to 7pm, Heating has the highest density over 5pm to 9pm, and Other has no identifiable trends apart from being evenly distributed during sociable hours.
 
 ### 2A - Casualties by causation
-```{r, casualties by causation, warning=FALSE}
+```{r, casualties by causation, warning=FALSE, out.width="50%",fig.show="hold"}
 
 # Summarise the data by Cause, and calculate some fields for analysis.
 Casualties_by_causation_analysis = Fires %>% 
@@ -224,11 +202,13 @@ Casualties_by_causation_analysis = Fires %>%
             Total_Incidents = n(), 
             risk_likelihood = 100*(Count_Casualties/Total_Incidents))
 
-# Note, care must be taken to distinguish the difference
-# between there being a casualty (a count) and the sum of casualties.
-# Both are useful for analysis, however for the proportion of incidents
-# where casualties have been involved, we will use the count.
+```
 
+Note, care must be taken to distinguish the difference between there being a casualty (a count) and the sum of casualties.
+Both are useful for analysis, however for the proportion of incidents where casualties have been involved, we will use the count.
+```{r, casualties by causation PT2, warning=FALSE, out.width="50%",fig.show="hold"}
+
+# Total Casualties by cause of fire
 ggplot(Casualties_by_causation_analysis, aes(x = Cause, y = Total_Casualties)) +
   geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7)) +
   theme_minimal() +
@@ -252,9 +232,10 @@ ggplot(Casualties_by_causation_analysis, aes(x = Cause, y = risk_likelihood)) +
 
 By examining total casualties by cause, and their likelihood to involve casualties, we can examine while
 Heating fires tend to have the most casualties involved, cooking fires are more likely to involve casualties.
+\newpage
 
 ### 2A - Casualty Distribution
-```{r, Casualty Distribution, warning=FALSE, message = FALSE}
+```{r, Casualty Distribution, warning=FALSE, message = FALSE, out.width="80%"}
 # Calculate Casualty distribution, filtering on where casualties occur.
 Casualty_Distribution = Fires %>% filter(Casualties > 0) %>%
   group_by(Cause,Casualties) %>%
@@ -275,6 +256,7 @@ ggplot(Casualty_Distribution,
    scale_fill_discrete(name = "Casualties")
 
 ```
+
 This is further examined in the distribution of casualties by cause, where heating fires tend to have a higher number of casualties involved.
 
 b) Are there any differences in the risk of fire for the different types of property? What is the relation between the year a property was built and the risk of fire?
@@ -283,18 +265,28 @@ b) Are there any differences in the risk of fire for the different types of prop
 # Join housing registry to fire dataset.
 Fire_join = Fires %>% left_join(Housing_Reg, by = c("RegisterNumber" = "ID"))
 ```
+\newpage
 
 ### 2B - Building Analysis
-```{r, building analysis}
+```{r, building analysis, out.width="50%",fig.show="hold"}
 # Summarise data for building analysis
-Building_Type_Analysis = Fire_join %>%  group_by(Type) %>% 
+
+Building_Count = Housing_Reg %>% group_by(Type) %>% 
+                 summarise(Count_Of_Properties = n())
+
+knitr::kable(Building_Count, caption = "A count of buildings in Housing_Reg")
+
+Building_Type_Analysis = Fire_join %>%  group_by(Type) %>%
 summarise(Total_Fires = n(),
           Fires_Involving_Casualties = sum(Casualties > 0),
-          Fires_Involving_Casualties_Perc = 100*Fires_Involving_Casualties/Total_Fires)
+          Fires_Involving_Casualties_Perc = 100*Fires_Involving_Casualties/Total_Fires) %>% 
+left_join(Building_Count, by = c("Type"="Type")) %>% 
+mutate(Fires_Per_Building_Perc = 100*Total_Fires/Count_Of_Properties)
+
           
 # Analyse Total fires by building type
 ggplot(Building_Type_Analysis, aes(x = Type, y = Total_Fires)) +
-  geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7)) +
+  geom_bar(stat = "identity", fill=rgb(0.4,0,0.48627,0.7)) +
   theme_minimal() +
   labs(x = "Building Type",
        y = "Total Fires", 
@@ -304,7 +296,7 @@ ggplot(Building_Type_Analysis, aes(x = Type, y = Total_Fires)) +
   
 # Analyse casualties by building type  
 ggplot(Building_Type_Analysis, aes(x = Type, y = Fires_Involving_Casualties_Perc)) +
-  geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7)) +
+  geom_bar(stat = "identity", fill=rgb(0.4,0,0.48627,0.7)) +
   theme_minimal() +
   labs(x = "Building Type",
        y = "Percentage of fires resulting\n in one or more casualty (%)", 
@@ -312,33 +304,63 @@ ggplot(Building_Type_Analysis, aes(x = Type, y = Fires_Involving_Casualties_Perc
   theme(plot.title = element_text(hjust = 0.5)) +
   coord_cartesian(ylim = c(0,5))
   
+# Percentage of houses resulting in fires by building type
+ggplot(Building_Type_Analysis, aes(x = Type, y = Fires_Per_Building_Perc)) +
+  geom_bar(stat = "identity", fill=rgb(0.4,0,0.48627,0.7)) +
+  theme_minimal() +
+  labs(x = "Building Type",
+       y = "Percentage of houses resulting in fires (%)", 
+       title = "Rate of Fires per Building \n by Building Type") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  coord_cartesian(ylim = c(0,1.5))
 ```
 
-We can see that in our sample terraced houses tend to have a significantly higher number of fires associated with them, however we are unsure of the total amount in Utopia, and therefore must proceed with caution.
+We can see that in our sample terraced houses tend to have a significantly larger amount of fires associated **(Top Left)**. However, by analysing the total amount of each property we find that Utopia has a significantly larger amount of terraced houses than other building types **(Table 1)**. We should therefore consider dividing through by the total amount in each group to establish a normalised comparison **(Bottom left)**.
 
-It may however be a fair assertation that fires are more likely to occur in terraced houses since of the higher likelihood of fire spreading house-to-house. While we have a clear outlier comparing the total amount of fires, when we look at the likelihood of one or more casualties we find a uniform distribution across all house types, inferring that none are more likely to have casualties than others.
+When looking at the percentage of houses resulting in fires, we find that terraced houses are still the most likely to be involved in fires, however less significantly than if we just looked at total fires.
+
+It may however be a fair assertion that fires are more likely to occur in terraced houses since there's a higher likelihood of fire spreading house-to-house. While we have a clear outlier comparing the total amount of fires, when adjusting for the amount of each building type, or instead looking at the likelihood of one or more casualties being involved in a fire the relationship between the building type and the other variables is dulled considerably.
+
+We find that no house type is more likely to involve casualties in an incident  **(Top Right)**, and terraced houses are slightly more likely to be involved in fires than other building types.
+
+\newpage
 
 ### 2B - Fires by Building Type
-```{r, Fires by Building Type, message = FALSE}
+```{r, Fires by Building Type, message = FALSE, out.width="50%",fig.show="hold"}
   # summarise data to find the yearly
   Fire_BuildingAge_Analysis = Fire_join %>% group_by(Type,Year) %>%
                               summarise(Total_Fires = n())
 
+  Years_Houses_Built = Housing_Reg %>% group_by(Type,Year) %>%
+                              summarise(Total_Houses = n())
+
+# Analyse Houses built by type and year
+ggplot(Years_Houses_Built, aes(x = Year, y = Total_Houses, color = Type)) +
+  geom_line(linewidth = 1) +
+  labs(title = "Total Houses built by building type and year built",
+       x = "Year property built",
+       y = "Total Houses") +
+  scale_color_discrete(name = "Building Type")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme_minimal()
+
+
 # Analyse Fires by building type and year built
 ggplot(Fire_BuildingAge_Analysis, aes(x = Year, y = Total_Fires, color = Type)) +
   geom_line(linewidth = 1) +
-  labs(title = "Total Fires by building type \nand year built",
+  labs(title = "Total Fires by building type and year built",
        x = "Year property built",
        y = "Total Fires") +
   scale_color_discrete(name = "Building Type") +
   theme(plot.title = element_text(hjust = 0.5))+
   theme_minimal()
 
-
 ```
 
 
-When we analyse fires by year built we find that terraced houses built in the early to late 1900s are involved in a greater number of fires. We can see a downwards trend towards the end of the sample period. It is important to note this does not necessarily mean that newer houses have less fires, since they have had less time for fires to occur in the sample period.
+When we analyse fires by year built we find that terraced houses built in the early to late 1900s are involved in a greater number of fires. We must also however analyse the total number of houses built over the same period. We find that the relationship between houses built and fires occurring is near identical, implying that while terraced houses are more likely to be involved in fires, this is only since there are more in the sample.
+
+We can see a downwards trend towards the end of the sample period. It is important to note this does not necessarily mean that newer houses have less fires, since they have had less time for fires to occur in the sample period.
 
 
 
@@ -346,7 +368,7 @@ c) The Fire Department wishes to run a campaign which encourages home owners to 
 
 ### 2C - Casualties by Detectors Present
 
-```{r, Casualties by Detectors Present}
+```{r, Casualties by Detectors Present, out.width="80%"}
 
 # Classify data into groups and summarise
 
@@ -358,16 +380,14 @@ Fires = Fires %>% mutate(Detectors_Present = case_when(
 
 Detector_Analysis = Fires %>% 
             group_by(Detectors_Present) %>% 
-  
             summarise(Total_Fires = n(),
                       Total_Casualties = sum(Casualties),
                       Count_Casualties = sum(Casualties > 0),
                       Casualty_likelihood = 100*Count_Casualties / Total_Fires,
                       Average_Property_Damage = mean(Damage, na.rm = TRUE))
 
-
 ggplot(Detector_Analysis, aes(x = Detectors_Present, y = Casualty_likelihood)) +
-  geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7)) +
+  geom_bar(stat = "identity", fill=rgb(0.4,0,0,0.7)) +
   theme_minimal() +
   labs(x = "Detectors Present",
        y = "Likelihood of one or more casualty (%)", 
@@ -377,24 +397,20 @@ ggplot(Detector_Analysis, aes(x = Detectors_Present, y = Casualty_likelihood)) +
 
 ```
 
-We are able to analyse that fires where no detectors are present have a significantly higher likelihood in resulting in one or more casualty. The likelihood of casualties is over 4 times higher in properties without detectors.
+We analyse that fires where no detectors are present have a significantly higher likelihood in resulting in one or more casualty. The likelihood of casualties is over 4 times higher in properties without detectors.
 
 ### 2C - Property Damage by Detectors Present
 
-```{r, Property damage by Detectors present}
+```{r, Property damage by Detectors present, out.width="80%"}
 ggplot(Detector_Analysis, aes(x = Detectors_Present, y = Average_Property_Damage)) +
-  geom_bar(stat = "identity", fill=rgb(0.1,0.4,0.5,0.7)) +
+  geom_bar(stat = "identity", fill=rgb(0.4,0,0,0.7)) +
   theme_minimal() +
   labs(x = "Detectors Present",
        y = "Average Property Damage (USD)", 
        title = "The average property damage by detector present") +
   theme(plot.title = element_text(hjust = 0.5)) +
   coord_cartesian(ylim = c(0,100000))
-
 ```
+
 We are able to conclude that properties with no detectors are more likely to have a higher monetary loss than those with detectors. It could be possible that since detectors are able to give early warning of a fire, the emergency services are called sooner and therefore respond quicker than if there were no detector - leading to less damage. 
-
-look at property year and detectors present!
-
-### 2C - Property year and detectors present
 
